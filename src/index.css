@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+ /* 🔹 Celsius → Fahrenheit */
+ /* F = (C × 9/5) + 32 */
+ /* f = (parseFloat(c) *9) /5 +32 */
+
+ /* 🔹 Fahrenheit → Celsius   */
+ /* C = (F - 32) × 5/9 */
+ /* C = (F - 32) × 5/9 */
