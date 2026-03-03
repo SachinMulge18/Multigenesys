@@ -1,18 +1,20 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useGetEmployeeQuery } from "./services/employeeApi";
+import EmployeeListPage from "./pages/EmployeeListPage";
+import EmployeeFormPage from "./pages/EmployeeFormPage";
+import { Box, Container } from "@mui/material";
 
 const App = () => {
-  const { data, isLoading, error } = useGetEmployeeQuery();
-  console.log(data);
-  if (isLoading) return <h1>Loadding</h1>;
-  if (error) return <h1>error</h1>;
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<h1>Appppp</h1>} />
-        {/* <Route path="/add" element={<EmployeeFormPage />} />
-        <Route path="/edit/:id" element={<EmployeeFormPage />} /> */}
-      </Routes>
+      <Box sx={{ minWidth:"100vw", minHeight: "100vh", bgcolor: "#f5f5f5", py: 4 }}>
+        <Container maxWidth="lg">
+          <Routes>
+            <Route path="/" element={<EmployeeListPage />} />
+            <Route path="/add" element={<EmployeeFormPage />} />
+            <Route path="/edit/:id" element={<EmployeeFormPage />} />
+          </Routes>
+        </Container>
+      </Box>
     </BrowserRouter>
   );
 };

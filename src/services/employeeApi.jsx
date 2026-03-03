@@ -1,17 +1,47 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { baseApi } from "../app/baseApi";
 
-export const employeeApi = createApi({
-  reducerPath: "employeeApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "https://669b3f09276e45187d34eb4e.mockapi.io/api/v1/",
-  }),
-  tagTypes: ["Employees"],
+export const employeeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getEmployee: builder.query({
       query: () => "employee",
       providesTags: ["Employees"],
     }),
+    getEmployeeById: builder.query({
+      query: (id) => `employee/${id}`,
+    }),
+
+    createEmployee: builder.mutation({
+      query: (data) => ({
+        url: "employee",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Employees"],
+    }),
+
+    updateEmployee: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `employee/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Employees"],
+    }),
+
+    deleteEmployee: builder.mutation({
+      query: (id) => ({
+        url: `employee/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Employees"],
+    }),
   }),
 });
 
-export const { useGetEmployeeQuery } = employeeApi;
+export const {
+  useGetEmployeeQuery,
+  useGetEmployeeByIdQuery,
+  useCreateEmployeeMutation,
+  useUpdateEmployeeMutation,
+  useDeleteEmployeeMutation,
+} = employeeApi;
