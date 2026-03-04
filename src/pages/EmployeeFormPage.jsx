@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import {
   Box,
   Breadcrumbs,
@@ -28,7 +29,6 @@ import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 const EmployeeFormPage = () => {
   const { id } = useParams();
-
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState({
@@ -36,27 +36,19 @@ const EmployeeFormPage = () => {
     message: "",
     severity: "success",
   });
-  const {
-    data: employee,
-    isLoading,
-    error,
-  } = useGetEmployeeByIdQuery(id, { skip: !id });
+  const { data: employee, isLoading, error, } = useGetEmployeeByIdQuery(id, { skip: !id });
   const { data: countries, isLoading: contryLoading } = useGetCountriesQuery();
-  const [createEmployee, { isLoading: isCreating }] =
-    useCreateEmployeeMutation();
-  const [updateEmployee, { isLoading: isUpdating }] =
-    useUpdateEmployeeMutation();
+  const [createEmployee, { isLoading: isCreating }] = useCreateEmployeeMutation();
+  const [updateEmployee, { isLoading: isUpdating }] = useUpdateEmployeeMutation();
 
-  const getCountryName =
-    countries?.find((c) => c.id === employee?.countryId)?.id || "N/A";
-
-  console.log("getCountryName", getCountryName);
+  const getCountryName = countries?.find((c) => c.id === employee?.countryId)?.id || "N/A";
+  // console.log(employee)
 
   const initialValues = {
     name: employee?.name || "",
     email: employee?.email || "",
     mobile: employee?.mobile || "",
-    country: employee?.countryId || "",
+    country: employee?.id || "",
     state: employee?.state || "",
     district: employee?.district || "",
   };
@@ -68,9 +60,7 @@ const EmployeeFormPage = () => {
     country: Yup.string().required("Country Required"),
   });
 
-  const handleCloseSnackbar = () => {
-    setToastMessage((prev) => ({ ...prev, open: false }));
-  };
+  const handleCloseSnackbar = () => {setToastMessage((prev) => ({ ...prev, open: false }));};
 
   const handleSubmit = async (values, resetForm) => {
     try {
@@ -86,37 +76,37 @@ const EmployeeFormPage = () => {
       if (id) {
         await updateEmployee({ id, ...payload }).unwrap();
         toast.success("Employee updated successfully!");
-        setToastMessage({
-          open: true,
-          message: "Employee updated successfully!",
-          severity: "success",
-        });
-        console.log("Employee Updated Successfully");
+        // setToastMessage({
+        //   open: true,
+        //   message: "Employee updated successfully!",
+        //   severity: "success",
+        // });
+        // console.log("Employee Updated Successfully");
       } else {
         await createEmployee(payload).unwrap();
         toast.success("Employee created successfully!");
-        setToastMessage({
-          open: true,
-          message: "Employee created successfully!",
-          severity: "success",
-        });
+        // setToastMessage({
+        //   open: true,
+        //   message: "Employee created successfully!",
+        //   severity: "success",
+        // });
         resetForm();
       }
 
       navigate("/");
     } catch (error) {
       toast.error(error?.data?.message || "Something went wrong!");
-      setToastMessage({
-        open: true,
-        message: error?.data?.message || "Something went wrong!",
-        severity: "error",
-      });
+      // setToastMessage({
+      //   open: true,
+      //   message: error?.data?.message || "Something went wrong!",
+      //   severity: "error",
+      // });
       console.error("Submission Error:", error);
     }
   };
 
   // if (contryLoading || isLoading) return <p>Loading...</p>;
-  if (error) return <h1>console.error();</h1>;
+  
   return (
     <>
       <Box>
@@ -152,6 +142,12 @@ const EmployeeFormPage = () => {
             : "Fill in the details to add a new employee to the directory."}
         </Typography>
 
+        {error && (
+          <Typography color="error" sx={{ mb: 2 }}>
+            {error?.data?.message || "An error occurred while loading employee data."}
+          </Typography>
+        )}
+
         {/* Form Card */}
         <Paper
           elevation={0}
@@ -175,9 +171,7 @@ const EmployeeFormPage = () => {
             enableReinitialize
             initialValues={initialValues}
             validationSchema={schema}
-            onSubmit={(values, { resetForm }) =>
-              handleSubmit(values, resetForm)
-            }
+            onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
           >
             {({ values, handleChange, errors, touched }) => (
               <Form>
@@ -200,11 +194,7 @@ const EmployeeFormPage = () => {
                     />
                   </Box>
 
-                  <Box
-                    sx={{
-                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
-                    }}
-                  >
+                  <Box sx={{flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },}}>
                     <TextField
                       label="Email"
                       name="email"
@@ -217,11 +207,7 @@ const EmployeeFormPage = () => {
                     />
                   </Box>
 
-                  <Box
-                    sx={{
-                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
-                    }}
-                  >
+                  <Box sx={{flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },}}>
                     <TextField
                       label="Mobile"
                       name="mobile"
@@ -234,11 +220,7 @@ const EmployeeFormPage = () => {
                     />
                   </Box>
 
-                  <Box
-                    sx={{
-                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
-                    }}
-                  >
+                  <Box sx={{flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },}}>
                     <TextField
                       select
                       label="Country"
@@ -262,11 +244,7 @@ const EmployeeFormPage = () => {
                     </TextField>
                   </Box>
 
-                  <Box
-                    sx={{
-                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
-                    }}
-                  >
+                  <Box sx={{flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" }, }}>
                     <TextField
                       label="State"
                       name="state"
@@ -277,11 +255,7 @@ const EmployeeFormPage = () => {
                     />
                   </Box>
 
-                  <Box
-                    sx={{
-                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
-                    }}
-                  >
+                  <Box sx={{flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },}}>
                     <TextField
                       label="District"
                       name="district"

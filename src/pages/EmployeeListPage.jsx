@@ -9,6 +9,7 @@ import EmployeeTable from "../components/EmployeeTable";
 import { useGetCountriesQuery } from "../services/countryApi";
 import AddIcon from "@mui/icons-material/Add";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { toast } from "react-toastify";
 
 const EmployeeListPage = () => {
   const navigate = useNavigate();
@@ -30,7 +31,13 @@ const EmployeeListPage = () => {
   }, [employees, searchTerm]);
 
   const handleDelete = async (id) => {
-    await deleteEmployee(id);
+    try {
+      await deleteEmployee(id);
+      toast.success("Employee deleted successfully"); 
+    } catch (error) {
+      toast.error("Failed to delete employee");
+      console.log(error)
+    }
   };
 
   // if (isLoading || contryLoading) return <p>Loading...</p>;
