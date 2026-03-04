@@ -1,26 +1,54 @@
-import { Button, MenuItem, TextField } from "@mui/material";
+import {
+  Box,
+  Breadcrumbs,
+  Button,
+  MenuItem,
+  Paper,
+  TextField,
+  Typography,
+  Link,
+  Divider,
+  Grid,
+} from "@mui/material";
 import { Form, Formik } from "formik";
 import React, { useState } from "react";
 import { useGetCountriesQuery } from "../services/countryApi";
-import { useCreateEmployeeMutation, useGetEmployeeByIdQuery, useUpdateEmployeeMutation } from "../services/employeeApi";
+import {
+  useCreateEmployeeMutation,
+  useGetEmployeeByIdQuery,
+  useUpdateEmployeeMutation,
+} from "../services/employeeApi";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+
 import { useNavigate, useParams } from "react-router-dom";
 import * as Yup from "yup";
 import ToastMessage from "../components/ui/ToastMessage";
+import { toast } from "react-toastify";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 const EmployeeFormPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate()
-  const [toastMessage,setToastMessage] = useState({
-    open:false,
-    message:"",
-    severity: "success"
-  })
-  const { data: employee, isLoading, error, } = useGetEmployeeByIdQuery(id, { skip: !id });
-  const { data: countries, isLoading: contryLoading } = useGetCountriesQuery();
-  const [createEmployee, { isLoading: isCreating }] = useCreateEmployeeMutation();
-  const [updateEmployee, { isLoading: isUpdating }] = useUpdateEmployeeMutation();
 
-  const getCountryName = countries?.find((c) => c.id === employee?.countryId)?.id || "N/A";
+  const isEdit = Boolean(id);
+  const navigate = useNavigate();
+  const [toastMessage, setToastMessage] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const {
+    data: employee,
+    isLoading,
+    error,
+  } = useGetEmployeeByIdQuery(id, { skip: !id });
+  const { data: countries, isLoading: contryLoading } = useGetCountriesQuery();
+  const [createEmployee, { isLoading: isCreating }] =
+    useCreateEmployeeMutation();
+  const [updateEmployee, { isLoading: isUpdating }] =
+    useUpdateEmployeeMutation();
+
+  const getCountryName =
+    countries?.find((c) => c.id === employee?.countryId)?.id || "N/A";
 
   console.log("getCountryName", getCountryName);
 
@@ -40,145 +68,247 @@ const EmployeeFormPage = () => {
     country: Yup.string().required("Country Required"),
   });
 
-  const handleCloseSnackbar = () => {setToastMessage((prev) => ({ ...prev, open: false }));};
-  
+  const handleCloseSnackbar = () => {
+    setToastMessage((prev) => ({ ...prev, open: false }));
+  };
+
   const handleSubmit = async (values, resetForm) => {
-  try {
-    const payload = {
-      name: values.name,
-      email: values.email,
-      mobile: values.mobile,
-      countryId: values.country, // map to backend field
-      state: values.state,
-      district: values.district,
-    };
+    try {
+      const payload = {
+        name: values.name,
+        email: values.email,
+        mobile: values.mobile,
+        countryId: values.country, // map to backend field
+        state: values.state,
+        district: values.district,
+      };
 
-    if (id) {
-      await updateEmployee({ id, ...payload }).unwrap();
+      if (id) {
+        await updateEmployee({ id, ...payload }).unwrap();
+        toast.success("Employee updated successfully!");
+        setToastMessage({
+          open: true,
+          message: "Employee updated successfully!",
+          severity: "success",
+        });
+        console.log("Employee Updated Successfully");
+      } else {
+        await createEmployee(payload).unwrap();
+        toast.success("Employee created successfully!");
+        setToastMessage({
+          open: true,
+          message: "Employee created successfully!",
+          severity: "success",
+        });
+        resetForm();
+      }
+
+      navigate("/");
+    } catch (error) {
+      toast.error(error?.data?.message || "Something went wrong!");
       setToastMessage({
         open: true,
-        message: "Employee updated successfully!",
-        severity: "success",
+        message: error?.data?.message || "Something went wrong!",
+        severity: "error",
       });
-      console.log("Employee Updated Successfully");
-    } else {
-      await createEmployee(payload).unwrap();
-      setToastMessage({
-        open: true,
-        message: "Employee created successfully!",
-        severity: "success",
-      })
-      console.log("Employee Created Successfully");
-      resetForm();
+      console.error("Submission Error:", error);
     }
+  };
 
-    navigate("/");
-  } catch (error) {
-    setToastMessage({
-      open: true,
-      message: error?.data?.message || "Something went wrong!",
-      severity: "error",
-    });
-    console.error("Submission Error:", error);
-  }
-};
-
-  if (contryLoading || isLoading) return <p>Loading...</p>;
+  // if (contryLoading || isLoading) return <p>Loading...</p>;
   if (error) return <h1>console.error();</h1>;
   return (
     <>
-      <Formik
-        enableReinitialize
-        initialValues={initialValues}
-        validationSchema={schema}
-        onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
-        // onSubmit={async (values) => {
-        //   if (id) {
-        //     console.log("update");
-        //     // await updateEmployee({ id, ...values });
-        //   } else {
-        //     console.log(values);
-        //   }
-        //   //   navigate("/");
-        // }}
-      >
-        {({ values, handleChange, errors, touched }) => (
-          <Form style={{ padding: 20 }}>
-            <TextField
-              label="Name"
-              name="name"
-              value={values.name}
-              onChange={handleChange}
-              error={touched.name && !!errors.name}
-              helperText={errors.name}
-              fullWidth
-              margin="normal"
-            />
+      <Box>
+        <Breadcrumbs
+          separator={<NavigateNextIcon fontSize="small" />}
+          sx={{ mb: 3 }}
+        >
+          <Link
+            underline="hover"
+            color="text.secondary"
+            onClick={() => navigate("/")}
+            sx={{ cursor: "pointer", fontSize: "0.875rem" }}
+          >
+            Employees
+          </Link>
+          <Typography variant="body2" color="text.primary">
+            {isEdit ? "Edit Employee" : "New Employee"}
+          </Typography>
+        </Breadcrumbs>
+        <Typography
+          variant="h4"
+          sx={{
+            fontFamily: "'DM Serif Display', serif",
+            fontWeight: 400,
+            mb: 1,
+          }}
+        >
+          {isEdit ? "Edit Employee" : "Add New Employee"}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+          {isEdit
+            ? "Update the employee information below."
+            : "Fill in the details to add a new employee to the directory."}
+        </Typography>
 
-            <TextField
-              label="Email"
-              name="email"
-              value={values.email}
-              error={touched.email && !!errors.email}
-              helperText={errors.email}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-            />
+        {/* Form Card */}
+        <Paper
+          elevation={0}
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 2,
+            p: { xs: 2.5, sm: 4 },
+          }}
+        >
+          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.5 }}>
+            Personal Information
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            All fields marked with * are required.
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
+          {contryLoading || isLoading && <LoadingSpinner message="Loading employee details..." />}
+          {/* Form fields */}
+          <Formik
+            enableReinitialize
+            initialValues={initialValues}
+            validationSchema={schema}
+            onSubmit={(values, { resetForm }) =>
+              handleSubmit(values, resetForm)
+            }
+          >
+            {({ values, handleChange, errors, touched }) => (
+              <Form>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                  {/* <Grid container spacing={3}></Grid> */}
+                  <Box
+                    sx={{
+                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
+                    }}
+                  >
+                    <TextField
+                      label="Name"
+                      name="name"
+                      value={values.name}
+                      onChange={handleChange}
+                      error={touched.name && !!errors.name}
+                      helperText={errors.name}
+                      fullWidth
+                      // margin="normal"
+                    />
+                  </Box>
 
-            <TextField
-              label="Mobile"
-              name="mobile"
-              value={values.mobile}
-              error={touched.mobile && !!errors.mobile}
-              helperText={errors.mobile}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-            />
+                  <Box
+                    sx={{
+                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
+                    }}
+                  >
+                    <TextField
+                      label="Email"
+                      name="email"
+                      value={values.email}
+                      error={touched.email && !!errors.email}
+                      helperText={errors.email}
+                      onChange={handleChange}
+                      fullWidth
+                      // margin="normal"
+                    />
+                  </Box>
 
-            <TextField
-              select
-              label="Country"
-              name="country"
-              value={values.country}
-              error={touched.country && !!errors.country}
-              helperText={errors.country}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-            >
-              {countries?.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.country}
-                </MenuItem>
-              ))}
-            </TextField>
+                  <Box
+                    sx={{
+                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
+                    }}
+                  >
+                    <TextField
+                      label="Mobile"
+                      name="mobile"
+                      value={values.mobile}
+                      error={touched.mobile && !!errors.mobile}
+                      helperText={errors.mobile}
+                      onChange={handleChange}
+                      fullWidth
+                      // margin="normal"
+                    />
+                  </Box>
 
-            <TextField
-              label="State"
-              name="state"
-              value={values.state}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-            />
+                  <Box
+                    sx={{
+                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
+                    }}
+                  >
+                    <TextField
+                      select
+                      label="Country"
+                      name="country"
+                      value={values.country}
+                      error={touched.country && !!errors.country}
+                      helperText={errors.country}
+                      onChange={handleChange}
+                      fullWidth
+                      // margin="normal"
+                    >
+                      {countries?.map((c) => (
+                        <MenuItem
+                          key={c.id}
+                          value={c.id}
+                          sx={{ width: "100%" }}
+                        >
+                          {c.country}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Box>
 
-            <TextField
-              label="District"
-              name="district"
-              value={values.district}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-            />
+                  <Box
+                    sx={{
+                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
+                    }}
+                  >
+                    <TextField
+                      label="State"
+                      name="state"
+                      value={values.state}
+                      onChange={handleChange}
+                      fullWidth
+                      // margin="normal"
+                    />
+                  </Box>
 
-            <Button type="submit" variant="contained" disabled={isCreating || isUpdating}>
-              Save
-            </Button>
-          </Form>
-        )}
-      </Formik>
+                  <Box
+                    sx={{
+                      flex: { xs: "1 1 100%", md: "1 1 calc(50% - 12px)" },
+                    }}
+                  >
+                    <TextField
+                      label="District"
+                      name="district"
+                      value={values.district}
+                      onChange={handleChange}
+                      fullWidth
+                      // margin="normal"
+                    />
+                  </Box>
+                </Box>
+                <Button
+                  type="submit"
+                  sx={{ mt: 5, mx: "auto", display: "block" }}
+                  variant="contained"
+                  disabled={isCreating || isUpdating}
+                >
+                  {isUpdating || isCreating
+                    ? "Saving..."
+                    : isEdit
+                      ? "Update Employee"
+                      : "Add Employee"}
+                </Button>
+              </Form>
+            )}
+          </Formik>
+        </Paper>
+      </Box>
       <ToastMessage
         open={toastMessage.open}
         message={toastMessage.message}
