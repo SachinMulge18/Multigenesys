@@ -41,28 +41,48 @@ const EmployeeFormPage = () => {
   const [createEmployee, { isLoading: isCreating }] = useCreateEmployeeMutation();
   const [updateEmployee, { isLoading: isUpdating }] = useUpdateEmployeeMutation();
 
-  const getCountryName = countries?.find((c) => c.id === employee?.countryId)?.id || "N/A";
-  // console.log(employee)
+  console.log(employee)
+
+  const getCountryName = countries?.find((c) => c.id === employee?.countryId) || "N/A";
+  console.log(getCountryName.id)
 
   const initialValues = {
     name: employee?.name || "",
     email: employee?.email || "",
     mobile: employee?.mobile || "",
-    country: employee?.id || "",
+    country: getCountryName?.id || employee?.countryId || "",
     state: employee?.state || "",
     district: employee?.district || "",
   };
 
   const schema = Yup.object({
-    name: Yup.string().required("Name is Required"),
-    email: Yup.string().email().required("email is Required"),
-    mobile: Yup.string().min(10).max(10).required("Mobile number is Required"),
-    country: Yup.string().required("Country Required"),
+    name: Yup.string()
+      .min(3, "Name must be at least 3 characters")
+      .required("Name is Required"),
+
+    email: Yup.string()
+      .email("Invalid email format")
+      .required("Email is Required"),
+
+    mobile: Yup.string()
+      .min(10, "Mobile number must be 10 digits")
+      .max(10, "Mobile number must be 10 digits")
+      .required("Mobile number is Required"),
+
+    country: Yup.string()
+      .required("Country Required"),
+
+    state: Yup.string()
+      .min(2, "State must be at least 2 characters"),
+
+    district: Yup.string()
+      .min(2, "District must be at least 2 characters"),
   });
 
   const handleCloseSnackbar = () => {setToastMessage((prev) => ({ ...prev, open: false }));};
 
   const handleSubmit = async (values, resetForm) => {
+    console.log(values)
     try {
       const payload = {
         name: values.name,
@@ -72,6 +92,7 @@ const EmployeeFormPage = () => {
         state: values.state,
         district: values.district,
       };
+      console.log(payload)
 
       if (id) {
         await updateEmployee({ id, ...payload }).unwrap();
